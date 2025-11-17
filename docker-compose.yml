@@ -1,0 +1,90 @@
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: cwv_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-core_web_vitals}
+      MYSQL_USER: ${MYSQL_USER:-cwv_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cwv_password}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      # Mount initialization script
+      - ./database/cwv_database.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      # Persistent data storage
+      - mysql_data:/var/lib/mysql
+    networks:
+      - cwv_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Streamlit Dashboard Service
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cwv_dashboard
+    restart: unless-stopped
+    command: python -m streamlit run src/dashboard/main.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-core_web_vitals}
+      MYSQL_USER: ${MYSQL_USER:-cwv_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cwv_password}
+      PERFORMANCE_GOAL_VALUE: ${PERFORMANCE_GOAL_VALUE:-70}
+    ports:
+      - "${DASHBOARD_PORT:-8501}:8501"
+    volumes:
+      # Mount source code for development (live updates)
+      - ./src:/app/src:ro
+      - ./credentials.json:/app/credentials.json:ro
+    networks:
+      - cwv_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # Data Collection Jobs Service (on-demand)
+  jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cwv_jobs
+    profiles:
+      - jobs  # This service only starts when explicitly requested
+    command: python -m src.jobs.collect_pagespeed_data
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-core_web_vitals}
+      MYSQL_USER: ${MYSQL_USER:-cwv_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cwv_password}
+      PAGESPEED_INSIGHTS_API_KEY: ${PAGESPEED_INSIGHTS_API_KEY}
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src:ro
+      - ./credentials.json:/app/credentials.json:ro
+      - ./logs:/app/logs
+    networks:
+      - cwv_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+# Named volumes for data persistence
+volumes:
+  mysql_data:
+    driver: local
+
+# Network for inter-service communication
+networks:
+  cwv_network:
+    driver: bridge
