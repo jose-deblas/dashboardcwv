@@ -14,10 +14,10 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # Install dependencies using uv
-# Create a virtual environment and install dependencies
+# Create a virtual environment and install dependencies (including dev dependencies)
 RUN uv venv /opt/venv && \
     . /opt/venv/bin/activate && \
-    uv pip install -r pyproject.toml
+    uv pip install -r pyproject.toml --extra dev
 
 # Stage 2: Runtime stage
 FROM python:3.13-slim
