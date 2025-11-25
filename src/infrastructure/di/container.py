@@ -6,6 +6,12 @@ from src.infrastructure.repositories.mysql_url_repository import MySQLURLReposit
 from src.infrastructure.repositories.mysql_core_web_vitals_repository import (
     MySQLCoreWebVitalsRepository,
 )
+from src.infrastructure.repositories.mysql_dashboard_repository import (
+    MySQLDashboardRepository,
+)
+from src.infrastructure.repositories.mysql_brand_repository import (
+    MySQLBrandRepository,
+)
 from src.infrastructure.api.pagespeed.auth.pagespeed_auth_provider import (
     PageSpeedAuthProvider,
 )
@@ -18,6 +24,15 @@ from src.infrastructure.api.pagespeed.pagespeed_client_facade import (
 )
 from src.application.use_cases.collect_pagespeed_data_use_case import (
     CollectPageSpeedDataUseCase,
+)
+from src.application.use_cases.dashboard.get_filter_options_use_case import (
+    GetFilterOptionsUseCase,
+)
+from src.application.use_cases.dashboard.get_performance_data_use_case import (
+    GetPerformanceDataUseCase,
+)
+from src.application.use_cases.dashboard.get_competitor_data_use_case import (
+    GetCompetitorDataUseCase,
 )
 
 
@@ -46,6 +61,17 @@ class Container(containers.DeclarativeContainer):
     core_web_vitals_repository = providers.Factory(
         MySQLCoreWebVitalsRepository,
         db_connection=database_connection,
+    )
+
+    brand_repository = providers.Factory(
+        MySQLBrandRepository,
+        db_connection=database_connection,
+    )
+
+    dashboard_repository = providers.Factory(
+        MySQLDashboardRepository,
+        db_connection=database_connection,
+        brand_repository=brand_repository,
     )
 
     # PageSpeed API
@@ -78,4 +104,21 @@ class Container(containers.DeclarativeContainer):
         url_repository=url_repository,
         cwv_repository=core_web_vitals_repository,
         pagespeed_client=pagespeed_client,
+    )
+
+    # Dashboard Use Cases
+    get_filter_options_use_case = providers.Factory(
+        GetFilterOptionsUseCase,
+        dashboard_repository=dashboard_repository,
+    )
+
+    get_performance_data_use_case = providers.Factory(
+        GetPerformanceDataUseCase,
+        dashboard_repository=dashboard_repository,
+    )
+
+    get_competitor_data_use_case = providers.Factory(
+        GetCompetitorDataUseCase,
+        dashboard_repository=dashboard_repository,
+        brand_repository=brand_repository,
     )

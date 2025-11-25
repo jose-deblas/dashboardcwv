@@ -70,3 +70,26 @@ CREATE TABLE IF NOT EXISTS `countries` (
   `country_name` VARCHAR(100) NOT NULL,
   UNIQUE KEY `unique_country_name` (`country_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table to store url_page_types
+CREATE TABLE IF NOT EXISTS `url_page_types` (
+  `page_type_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `page_type` VARCHAR(50) NOT NULL,
+  UNIQUE KEY `unique_page_type` (`page_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table to store url_brands
+CREATE TABLE IF NOT EXISTS `url_brands` (
+  `brand_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `brand` VARCHAR(50) NOT NULL,
+  `target_brand` BOOLEAN NOT NULL DEFAULT TRUE,
+  UNIQUE KEY `unique_brand` (`brand`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table to store url_categories
+CREATE TABLE IF NOT EXISTS `url_categories` (
+  `category_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `category` VARCHAR(10) NOT NULL,
+  UNIQUE KEY `unique_category` (`category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

@@ -88,7 +88,7 @@ mysql-shell: ## Open MySQL shell
 
 mysql-create-db-tables: ## Create the MySQL tables executing the schema.sql file
 	@echo "$(BLUE)Creating database tables...$(NC)"
-	@docker compose exec mysql mysql -u$${MYSQL_USER:-cwv_user} -p$${MYSQL_PASSWORD:-cwv_password} $${MYSQL_DATABASE:-core_web_vitals} < /docker-entrypoint-initdb.d/schema.sql
+	@docker compose exec mysql sh -c "mysql -u$${MYSQL_USER:-cwv_user} -p$${MYSQL_PASSWORD:-cwv_password} $${MYSQL_DATABASE:-core_web_vitals} < /docker-entrypoint-initdb.d/schema.sql"
 	@echo "$(GREEN)✓ Database tables created$(NC)"
 
 run-job: ## Run data collection job (use: make run-job JOB=collect_pagespeed_data)
