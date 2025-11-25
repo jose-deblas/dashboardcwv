@@ -13,7 +13,7 @@ services:
       - "${MYSQL_PORT:-3306}:3306"
     volumes:
       # Mount initialization script
-      - ./database/cwv_database.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/cwv_database.sql:/docker-entrypoint-initdb.d/schema.sql:ro
       # Persistent data storage
       - mysql_data:/var/lib/mysql
     networks:
@@ -46,6 +46,7 @@ services:
       # Mount source code for development (live updates)
       - ./src:/app/src:ro
       - ./credentials.json:/app/credentials.json:ro
+      - ./tests:/app/tests:ro
     networks:
       - cwv_network
     depends_on:
