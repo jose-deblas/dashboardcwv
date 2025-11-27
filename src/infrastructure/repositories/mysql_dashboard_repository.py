@@ -319,7 +319,7 @@ class MySQLDashboardRepository(DashboardRepository):
         except MySQLError as e:
             raise RuntimeError(f"Failed to get brand rankings: {str(e)}")
 
-    def get_brand_time_series(
+    def _build_brand_time_series_query_and_params(
         self,
         start_date: date,
         end_date: date,
@@ -327,8 +327,10 @@ class MySQLDashboardRepository(DashboardRepository):
         brands: List[str],
         countries: Optional[List[str]] = None,
         page_types: Optional[List[str]] = None,
-    ) -> List[Dict]:
-        """Get performance score time series data for specific brands."""
+    ) -> Tuple[str, List]:
+        """
+        Build the SQL query and params for brand time series.
+        """
         query = """
             SELECT
                 cwv.execution_date,
@@ -343,10 +345,11 @@ class MySQLDashboardRepository(DashboardRepository):
 
         params: List = [start_date, end_date, device]
 
-        # Add brand filter (required)
-        placeholders = ",".join(["%s"] * len(brands))
-        query += f" AND u.brand IN ({placeholders})"
-        params.extend(brands)
+        # Add brand filter
+        if brands:
+            placeholders = ",".join(["%s"] * len(brands))
+            query += f" AND u.brand IN ({placeholders})"
+            params.extend(brands)
 
         # Add optional filters
         if countries:
@@ -363,6 +366,22 @@ class MySQLDashboardRepository(DashboardRepository):
             GROUP BY cwv.execution_date, u.brand
             ORDER BY cwv.execution_date ASC, u.brand ASC
         """
+
+        return query, params
+
+    def get_brand_time_series(
+        self,
+        start_date: date,
+        end_date: date,
+        device: str,
+        brands: List[str],
+        countries: Optional[List[str]] = None,
+        page_types: Optional[List[str]] = None,
+    ) -> List[Dict]:
+        """Get performance score time series data for specific brands."""
+        query, params = self._build_brand_time_series_query_and_params(
+            start_date, end_date, device, brands, countries, page_types
+        )
 
         try:
             connection = self._db.get_connection()
