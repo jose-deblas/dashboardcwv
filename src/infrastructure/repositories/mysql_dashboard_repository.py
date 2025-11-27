@@ -58,12 +58,12 @@ class MySQLDashboardRepository(DashboardRepository):
         except MySQLError as e:
             raise RuntimeError(f"Failed to get date range: {str(e)}")
 
-    def get_available_brands(self) -> List[str]:
+    def get_target_brands(self) -> List[str]:
         """Get list of distinct brands available in the database."""
         query = """
-            SELECT DISTINCT brand
-            FROM urls
-            WHERE brand IS NOT NULL
+            SELECT brand
+            FROM url_brands
+            WHERE target_brand = TRUE
             ORDER BY brand ASC
         """
 

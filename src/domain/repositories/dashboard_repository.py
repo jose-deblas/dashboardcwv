@@ -29,7 +29,7 @@ class DashboardRepository(ABC):
         pass
 
     @abstractmethod
-    def get_available_brands(self) -> List[str]:
+    def get_target_brands(self) -> List[str]:
         """
         Get list of distinct brands available in the database.
 

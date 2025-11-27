@@ -88,8 +88,8 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
                 st.error("Start date must be before or equal to end date")
                 return None
 
-            # Convert "All" selections to None (no filter)
-            brands = None if selected_brand == "All" else [selected_brand]
+            # Convert "All" selections to None (no filter) except for target brand (all target brands)
+            brands = filter_options.brands if selected_brand == "All" else [selected_brand]
             countries = None if selected_country == "All" else [selected_country]
             page_types = None if not selected_page_types else selected_page_types
 
