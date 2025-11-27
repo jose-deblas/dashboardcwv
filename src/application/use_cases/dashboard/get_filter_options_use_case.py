@@ -37,7 +37,7 @@ class GetFilterOptionsUseCase:
             RuntimeError: If repository operations fail
         """
         min_date, max_date = self._repository.get_date_range()
-        brands = self._repository.get_available_brands()
+        brands = self._repository.get_target_brands()
         countries = self._repository.get_available_countries()
         page_types = self._repository.get_available_page_types()
 

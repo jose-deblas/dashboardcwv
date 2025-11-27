@@ -35,7 +35,7 @@ class TestGetFilterOptionsUseCase:
             date(2024, 1, 1),
             date(2024, 12, 31),
         )
-        mock_repository.get_available_brands.return_value = ["Caprabo", "Lidl"]
+        mock_repository.get_target_brands.return_value = ["Caprabo", "Lidl"]
         mock_repository.get_available_countries.return_value = ["ES", "DE", "FR"]
         mock_repository.get_available_page_types.return_value = ["home", "product"]
 
@@ -51,7 +51,7 @@ class TestGetFilterOptionsUseCase:
 
         # Verify repository methods were called
         mock_repository.get_date_range.assert_called_once()
-        mock_repository.get_available_brands.assert_called_once()
+        mock_repository.get_target_brands.assert_called_once()
         mock_repository.get_available_countries.assert_called_once()
         mock_repository.get_available_page_types.assert_called_once()
 
@@ -61,7 +61,7 @@ class TestGetFilterOptionsUseCase:
         """Test that execute handles case when no data exists."""
         # Arrange
         mock_repository.get_date_range.return_value = (None, None)
-        mock_repository.get_available_brands.return_value = []
+        mock_repository.get_target_brands.return_value = []
         mock_repository.get_available_countries.return_value = []
         mock_repository.get_available_page_types.return_value = []
 

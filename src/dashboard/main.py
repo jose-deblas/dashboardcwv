@@ -93,14 +93,10 @@ def main():
             unsafe_allow_html=True,
         )
 
-        
-                    
-                    
-
         st.markdown("---")
 
         # Dark mode toggle
-        dark_mode = st.toggle("🌙 Dark Mode", value=st.session_state.dark_mode)
+        dark_mode = st.toggle("🌙 Dark Mode")
         if dark_mode != st.session_state.dark_mode:
             st.session_state.dark_mode = dark_mode
             st.rerun()
@@ -130,7 +126,7 @@ def main():
         st.session_state.filter_criteria = FilterCriteria(
             start_date=filter_options.min_date,
             end_date=filter_options.max_date,
-            brands=None,
+            brands=filter_options.brands,
             countries=None,
             page_types=None,
         )
