@@ -22,7 +22,6 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
     Returns:
         FilterCriteria if form is submitted, None otherwise
     """
-    st.markdown("### Filters")
 
     with st.form(key="dashboard_filters"):
         col1, col2, col3, col4 = st.columns(4)
@@ -30,11 +29,11 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
         # Date range filters
         with col1:
             start_date = st.date_input(
-                "Start Date",
+                "Initial Date",
                 value=filter_options.min_date if filter_options.min_date else date.today(),
                 min_value=filter_options.min_date,
                 max_value=filter_options.max_date,
-                help="Select the start date for data analysis",
+                help="Select the initial date for data analysis",
             )
 
         with col2:
@@ -53,7 +52,7 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
                 "Brand",
                 options=brand_options,
                 index=0,
-                help="Filter by target brand",
+                help="Filter by your target brand. Option [All] means that we show the average for our target brands, all those listed in the filter",
             )
 
         # Country filter
@@ -100,7 +99,7 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
                 countries=countries,
                 page_types=page_types,
             )
-
+    
     return None
 
 
@@ -111,12 +110,11 @@ def display_active_filters(filter_criteria: FilterCriteria):
     Args:
         filter_criteria: Current filter criteria
     """
-    st.markdown("#### Active Filters")
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.info(f"📅 **Date Range:** {filter_criteria.start_date} to {filter_criteria.end_date}")
+        st.info(f"📅 **From** {filter_criteria.start_date} **to** {filter_criteria.end_date}")
 
     with col2:
         brands_text = (
@@ -141,5 +139,3 @@ def display_active_filters(filter_criteria: FilterCriteria):
             else "All Page Types"
         )
         st.info(f"📄 **Page Types:** {page_types_text}")
-
-    st.markdown("---")

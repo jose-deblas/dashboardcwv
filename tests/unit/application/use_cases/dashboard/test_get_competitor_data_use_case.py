@@ -61,9 +61,9 @@ class TestGetCompetitorDataUseCase:
         """Test that execute returns CompetitorData with rankings and time series."""
         # Arrange
         mock_rankings = [
-            {"brand": "Lidl", "avg_performance_score": 95.0, "rank": 1},
-            {"brand": "Caprabo", "avg_performance_score": 92.0, "rank": 2},
-            {"brand": "Mercadona", "avg_performance_score": 90.0, "rank": 3},
+            {"brand": "Lidl", "avg_performance_score": 95.0, "ranking_position": 1},
+            {"brand": "Caprabo", "avg_performance_score": 92.0, "ranking_position": 2},
+            {"brand": "Mercadona", "avg_performance_score": 90.0, "ranking_position": 3},
         ]
 
         mock_time_series = [
@@ -135,8 +135,8 @@ class TestGetCompetitorDataUseCase:
         """Test that get_rankings returns only ranking data."""
         # Arrange
         mock_rankings = [
-            {"brand": "Lidl", "avg_performance_score": 95.0, "rank": 1},
-            {"brand": "Mercadona", "avg_performance_score": 90.0, "rank": 2},
+            {"brand": "Lidl", "avg_performance_score": 95.0, "ranking_position": 1},
+            {"brand": "Mercadona", "avg_performance_score": 90.0, "ranking_position": 2},
         ]
 
         mock_repository.get_brand_rankings.return_value = mock_rankings

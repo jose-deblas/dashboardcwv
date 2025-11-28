@@ -132,14 +132,12 @@ def main():
         )
 
     # Render filters
-    new_filter_criteria = render_filters(filter_options)
-    if new_filter_criteria:
-        st.session_state.filter_criteria = new_filter_criteria
-
-    st.markdown("---")
-
-    # Display active filters
-    display_active_filters(st.session_state.filter_criteria)
+    with st.expander("Show/Hide Filters", expanded=False):
+        new_filter_criteria = render_filters(filter_options)
+        if new_filter_criteria:
+            st.session_state.filter_criteria = new_filter_criteria
+        
+        display_active_filters(st.session_state.filter_criteria)
 
     # Fetch and display data
     try:
@@ -190,8 +188,6 @@ def main():
 
     # Footer
     st.markdown("---")
-    st.caption("Core Web Vitals Dashboard | Built with Clean Architecture principles")
-
 
 if __name__ == "__main__":
     main()

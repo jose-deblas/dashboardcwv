@@ -59,27 +59,19 @@ class GetCompetitorDataUseCase:
             raise ValueError("device must be 'mobile' or 'desktop'")
 
         # Get brand rankings for the end date
-        rankings_data = self._repository.get_brand_rankings(
-            target_date=filter_criteria.end_date,
-            device=device,
-            countries=filter_criteria.countries,
-            page_types=filter_criteria.page_types,
-            limit=3,  # Top 3 brands
-        )
+        # rankings_data = self._repository.get_brand_rankings(
+        #     target_date=filter_criteria.end_date,
+        #     device=device,
+        #     countries=filter_criteria.countries,
+        #     page_types=filter_criteria.page_types,
+        #     limit=3,  # Top 3 brands
+        # )
 
-        # Get target brands for comparison
-        target_brands = self._brand_repository.get_target_brands()
+        # # Get target brands for comparison
+        # target_brands = self._brand_repository.get_target_brands()
 
         # Convert to BrandRanking DTOs
-        rankings = [
-            BrandRanking(
-                brand=row["brand"],
-                avg_performance_score=row["avg_performance_score"],
-                rank=row["rank"],
-                is_target_brand=row["brand"] in target_brands,
-            )
-            for row in rankings_data
-        ]
+        rankings = self.get_rankings(filter_criteria, device)
 
         # Get brands to include in time series (all brands in rankings)
         brands = [r.brand for r in rankings]
@@ -146,7 +138,7 @@ class GetCompetitorDataUseCase:
             BrandRanking(
                 brand=row["brand"],
                 avg_performance_score=row["avg_performance_score"],
-                rank=row["rank"],
+                rank=row["ranking_position"],
                 is_target_brand=row["brand"] in target_brands,
             )
             for row in rankings_data

@@ -247,40 +247,14 @@ class MySQLDashboardRepository(DashboardRepository):
     ) -> List[Dict]:
         """Get brand rankings by average performance score for a specific date."""
         # First, get top N brands
-        query_top = """
-            SELECT
-                u.brand,
-                AVG(cwv.performance_score) as avg_performance_score
-            FROM url_core_web_vitals cwv
-            INNER JOIN urls u ON cwv.url_id = u.url_id
-            WHERE cwv.execution_date = %s
-                AND u.device = %s
-                AND cwv.performance_score IS NOT NULL
-                AND u.brand IS NOT NULL
-        """
-
-        params: List = [target_date, device]
-
-        # Add optional filters
-        if countries:
-            placeholders = ",".join(["%s"] * len(countries))
-            query_top += f" AND u.country_id IN ({placeholders})"
-            params.extend(countries)
-
-        if page_types:
-            placeholders = ",".join(["%s"] * len(page_types))
-            query_top += f" AND u.page_type IN ({placeholders})"
-            params.extend(page_types)
-
-        query_top += """
-            GROUP BY u.brand
-            ORDER BY avg_performance_score DESC
-        """
+        query, params = self._build_rankings_query_and_params(
+            target_date, device, countries, page_types
+        )
 
         try:
             connection = self._db.get_connection()
             cursor = connection.cursor(dictionary=True)
-            cursor.execute(query_top, params)
+            cursor.execute(query, params)
             all_brands = cursor.fetchall()
             cursor.close()
 
@@ -301,23 +275,53 @@ class MySQLDashboardRepository(DashboardRepository):
                 if brand_data["brand"] in missing_targets:
                     result.append(brand_data)
 
-            # Assign ranks
-            ranked_results = []
-            for rank, brand_data in enumerate(result, start=1):
-                ranked_results.append(
-                    {
-                        "brand": brand_data["brand"],
-                        "avg_performance_score": float(
-                            brand_data["avg_performance_score"]
-                        ),
-                        "rank": rank,
-                    }
-                )
-
-            return ranked_results
+            return result
 
         except MySQLError as e:
             raise RuntimeError(f"Failed to get brand rankings: {str(e)}")
+    
+    def _build_rankings_query_and_params(
+        self,
+        target_date: date,
+        device: str,
+        countries: Optional[List[str]] = None,
+        page_types: Optional[List[str]] = None
+    ) -> Tuple[str, List]:
+        """
+        Build the SQL query and params for rankings.
+        """
+        query = """
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY AVG(cwv.performance_score) DESC) AS ranking_position,
+                u.brand,
+                AVG(cwv.performance_score) as avg_performance_score
+            FROM url_core_web_vitals cwv
+            INNER JOIN urls u ON cwv.url_id = u.url_id
+            WHERE cwv.execution_date = %s
+                AND u.device = %s
+                AND cwv.performance_score IS NOT NULL
+                AND u.brand IS NOT NULL
+        """
+
+        params: List = [target_date, device]
+
+        # Add optional filters
+        if countries:
+            placeholders = ",".join(["%s"] * len(countries))
+            query += f" AND u.country_id IN ({placeholders})"
+            params.extend(countries)
+
+        if page_types:
+            placeholders = ",".join(["%s"] * len(page_types))
+            query += f" AND u.page_type IN ({placeholders})"
+            params.extend(page_types)
+
+        query += """
+            GROUP BY u.brand
+            ORDER BY avg_performance_score DESC
+        """
+
+        return query, params
 
     def _build_brand_time_series_query_and_params(
         self,
