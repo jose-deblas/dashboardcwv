@@ -58,18 +58,6 @@ class GetCompetitorDataUseCase:
         if device not in ["mobile", "desktop"]:
             raise ValueError("device must be 'mobile' or 'desktop'")
 
-        # Get brand rankings for the end date
-        # rankings_data = self._repository.get_brand_rankings(
-        #     target_date=filter_criteria.end_date,
-        #     device=device,
-        #     countries=filter_criteria.countries,
-        #     page_types=filter_criteria.page_types,
-        #     limit=3,  # Top 3 brands
-        # )
-
-        # # Get target brands for comparison
-        # target_brands = self._brand_repository.get_target_brands()
-
         # Convert to BrandRanking DTOs
         rankings = self.get_rankings(filter_criteria, device)
 
