@@ -11,7 +11,7 @@ import streamlit as st
 
 from src.application.dto.dashboard_dtos import DeviceMetrics, TimeSeriesPoint
 from src.dashboard.components.charts import create_performance_evolution_chart
-from src.dashboard.components.styles import get_traffic_light_html
+from src.dashboard.components.styles import get_weather_give_traffic_light_color
 
 
 def render_device_metrics(device_metrics: DeviceMetrics):
@@ -28,49 +28,43 @@ def render_device_metrics(device_metrics: DeviceMetrics):
         st.warning(f"No data available for {device_label}")
         return
 
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stMetricDelta"] {
+            font-size: 1.5em;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     col1, col2, col3 = st.columns(3)
 
     # Start score
     with col1:
-        st.markdown(f"**{device_label} - Start Date**")
-        if device_metrics.start_score is not None:
-            st.markdown(
-                get_traffic_light_html("amber", device_metrics.start_score),
-                unsafe_allow_html=True,
-            )
-        else:
-            st.info("No data")
+        start_score_value = f"{device_metrics.start_score:.2f}" if device_metrics.start_score is not None else "N/A"
+        st.metric(
+            "**Initial Date**",
+            value=start_score_value,
+            delta=None,
+            width="content",
+        )
 
     # End score
     with col2:
-        st.markdown(f"**{device_label} - End Date**")
-        if device_metrics.end_score is not None:
-            traffic_light_color = device_metrics.traffic_light
-            st.markdown(
-                get_traffic_light_html(
-                    traffic_light_color,
-                    device_metrics.end_score,
-                    device_metrics.delta,
-                ),
-                unsafe_allow_html=True,
-            )
-        else:
-            st.info("No data")
+        end_score_value = f"{device_metrics.end_score:.2f}" if device_metrics.end_score is not None else "N/A"
+        delta_value = f"{device_metrics.delta:.2f}" if device_metrics.delta is not None else None
+        st.metric(
+            "**End Date**",
+            value=end_score_value,
+            delta=delta_value,
+            width="content",
+        )
 
-    # Delta
     with col3:
-        st.markdown(f"**{device_label} - Change**")
-        if device_metrics.delta is not None:
-            delta_value = device_metrics.delta
-            if delta_value > 0:
-                st.success(f"⬆️ +{delta_value:.2f} points")
-            elif delta_value < 0:
-                st.error(f"⬇️ {delta_value:.2f} points")
-            else:
-                st.warning("➡️ No change")
-        else:
-            st.info("N/A")
-
+        weather_character = get_weather_give_traffic_light_color(device_metrics.traffic_light)
+        st.markdown(f"<h2>{weather_character}</h2>", unsafe_allow_html=True)
 
 def render_performance_section(
     mobile_metrics: DeviceMetrics,
@@ -87,21 +81,25 @@ def render_performance_section(
         mobile_time_series: Mobile time series data
         desktop_time_series: Desktop time series data
     """
-    st.markdown('<h2 class="highlight">📊 Performance Overview</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<h2 class="highlight">📊 Performance Score</h2>',
+        unsafe_allow_html=True,
+        help="The Core Web Vitals performance score is based on real-world user data (field data) and is determined by three metrics: Largest Contentful Paint (LCP), Interaction to Next Paint (INP), and Cumulative Layout Shift (CLS)"
+    )
 
-    # Display metrics for both devices
-    st.markdown("### Mobile Performance")
-    render_device_metrics(mobile_metrics)
+    col1, col2 = st.columns(2)
 
-    st.markdown("---")
+    with col1.container(border=True, height="stretch"):
+        st.markdown("### 📱 Mobile")
+        render_device_metrics(mobile_metrics)
 
-    st.markdown("### Desktop Performance")
-    render_device_metrics(desktop_metrics)
+    with col2.container(border=True, height="stretch"):
+        st.markdown("### 💻 Desktop")
+        render_device_metrics(desktop_metrics)
 
-    st.markdown("---")
-
+    
     # Evolution chart
-    st.markdown("### Performance Evolution")
+    st.markdown("### Performance Score Evolution")
 
     if not mobile_time_series and not desktop_time_series:
         st.warning("No time series data available for the selected filters")
@@ -109,8 +107,5 @@ def render_performance_section(
         fig = create_performance_evolution_chart(
             mobile_data=mobile_time_series,
             desktop_data=desktop_time_series,
-            title="Performance Score Evolution Over Time",
         )
         st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")

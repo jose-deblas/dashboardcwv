@@ -221,32 +221,24 @@ def get_dark_mode_css() -> str:
     """
 
 
-def get_traffic_light_html(color: str, value: float, delta: float = None) -> str:
+def get_weather_give_traffic_light_color(color: str) -> str:
     """
-    Generate HTML for traffic light indicator.
+    Return a unicode character representing the traffic light indicator.
 
     Args:
         color: Traffic light color ('green', 'amber', or 'red')
-        value: Performance score value
-        delta: Optional delta value to display
 
     Returns:
-        HTML string for traffic light display
+        Unicode character for sun/cloud/storm
     """
-    css_class = f"traffic-light-{color}"
-
-    if delta is not None:
-        sign = "+" if delta > 0 else ""
-        delta_html = f'<div style="font-size: 18px; margin-top: 5px;">{sign}{delta:.2f}</div>'
+    if color == 'green':
+        return '☀️'  # Sun for green
+    elif color == 'amber':
+        return '⛅'  # Cloudy for amber
+    elif color == 'red':
+        return '🌩️'  # Storm for red
     else:
-        delta_html = ""
-
-    return f"""
-    <div class="{css_class}">
-        {value:.2f}
-        {delta_html}
-    </div>
-    """
+        return '❓'  # Unknown
 
 
 def get_metric_card_html(
