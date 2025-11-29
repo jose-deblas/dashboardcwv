@@ -99,13 +99,13 @@ def render_performance_section(
 
     
     # Evolution chart
-    st.markdown("### Performance Score Evolution")
-
     if not mobile_time_series and not desktop_time_series:
         st.warning("No time series data available for the selected filters")
     else:
-        fig = create_performance_evolution_chart(
-            mobile_data=mobile_time_series,
-            desktop_data=desktop_time_series,
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        col1 = st.container()
+        with col1.container(border=True, height="stretch"):            
+            fig = create_performance_evolution_chart(
+                mobile_data=mobile_time_series,
+                desktop_data=desktop_time_series,
+            )
+            st.plotly_chart(fig, use_container_width=True)

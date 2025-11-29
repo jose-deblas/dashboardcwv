@@ -66,7 +66,7 @@ def create_performance_evolution_chart(
                 y=desktop_scores,
                 mode="lines+markers",
                 name="Desktop",
-                line=dict(color="royalblue", width=3),#line=dict(color="#4a9eff", width=3),
+                line=dict(color="royalblue", width=3),
                 marker=dict(size=8),
                 hovertemplate="Desktop: %{y:.2f}<extra></extra>",
             )
@@ -74,6 +74,9 @@ def create_performance_evolution_chart(
 
     # Layout
     fig.update_layout(
+        title=dict(
+            text=f" Performance Score Evolution",
+        ),
         xaxis=dict(
             showgrid=True,
         ),
@@ -173,25 +176,16 @@ def create_competitor_evolution_chart(
     # Layout
     fig.update_layout(
         title=dict(
-            text=f" {device.capitalize()}",
-            #font=dict(size=20, color="#a7f9ab"),
+            text=f" {device.capitalize()} Evolution",
         ),
         xaxis=dict(
-            #title="Date",
             showgrid=True,
-            #gridcolor="#333",
-            #color="#fff",
         ),
         yaxis=dict(
             title="Performance Score",
             showgrid=True,
-            #gridcolor="#333",
             range=[min_score, max_score],
-            #color="#fff",
         ),
-        #plot_bgcolor="#1e1e1e",
-        #paper_bgcolor="#262730",
-        #font=dict(color="#fff"),
         hovermode="x unified",
         legend=dict(
             orientation="h",
