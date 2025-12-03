@@ -15,7 +15,6 @@ from src.application.dto.dashboard_dtos import FilterCriteria
 from src.dashboard.components.competitors_section import render_competitor_section
 from src.dashboard.components.filters import display_active_filters, render_filters
 from src.dashboard.components.performance_section import render_performance_section
-from src.dashboard.components.styles import get_dark_mode_css
 from src.infrastructure.di.container import Container
 
 # Load environment variables
@@ -61,17 +60,10 @@ def initialize_session_state():
     """Initialize Streamlit session state variables."""
     if "filter_criteria" not in st.session_state:
         st.session_state.filter_criteria = None
-    if "dark_mode" not in st.session_state:
-        st.session_state.dark_mode = True  # Default to dark mode
-
-
+    
 def main():
     """Main dashboard application."""
     initialize_session_state()
-
-    # Apply dark mode CSS
-    if st.session_state.dark_mode:
-        st.markdown(get_dark_mode_css(), unsafe_allow_html=True)
 
     # Initialize DI container
     try:
@@ -79,27 +71,6 @@ def main():
     except Exception as e:
         st.error(f"Failed to initialize application: {str(e)}")
         st.stop()
-
-    # Sidebar
-    with st.sidebar:
-        st.markdown('<h1 class="highlight">📊 CWV Dashboard</h1>', unsafe_allow_html=True)
-        st.markdown("---")
- 
-        # Navigation menu with links with streamlit markdown
-        st.markdown(
-            """
-            [Home](#)
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown("---")
-
-        # Dark mode toggle
-        dark_mode = st.toggle("🌙 Dark Mode")
-        if dark_mode != st.session_state.dark_mode:
-            st.session_state.dark_mode = dark_mode
-            st.rerun()
 
     # Main content
     st.markdown('<h1 class="highlight">Core Web Vitals Dashboard</h1>', unsafe_allow_html=True)
