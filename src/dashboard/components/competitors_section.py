@@ -49,10 +49,10 @@ def render_rankings_table(rankings: List[BrandRanking]):
         else:
             st.markdown(
                 f"""
-                <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #000;">
-                    <span style="font-size: 24px; font-weight: bold; color:#000">{medal} #{ranking.rank}</span>
-                    <span style="font-size: 20px; margin-left: 15px; color:#000">{ranking.brand}</span>
-                    <span style="float: right; font-size: 24px; font-weight: bold; color:#000">{ranking.avg_performance_score:.2f}</span>
+                <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid;">
+                    <span style="font-size: 24px; font-weight: bold;">{medal} #{ranking.rank}</span>
+                    <span style="font-size: 20px; margin-left: 15px;">{ranking.brand}</span>
+                    <span style="float: right; font-size: 24px; font-weight: bold;">{ranking.avg_performance_score:.2f}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
