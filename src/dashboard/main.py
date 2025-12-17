@@ -107,9 +107,7 @@ def main():
         new_filter_criteria = render_filters(filter_options)
         if new_filter_criteria:
             st.session_state.filter_criteria = new_filter_criteria
-        
-        display_active_filters(st.session_state.filter_criteria)
-
+    
     # Fetch and display data
     try:
         filter_criteria = st.session_state.filter_criteria
@@ -138,6 +136,8 @@ def main():
             desktop_competitor_data = get_competitor_data_use_case.execute(
                 filter_criteria, "desktop"
             )
+        
+        # display_active_filters(st.session_state.filter_criteria)
 
         # Render performance section
         render_performance_section(
@@ -145,12 +145,14 @@ def main():
             desktop_metrics=performance_metrics.desktop_metrics,
             mobile_time_series=mobile_time_series,
             desktop_time_series=desktop_time_series,
+            filter_criteria=st.session_state.filter_criteria
         )
 
         # Render competitors section
         render_competitor_section(
             mobile_competitor_data=mobile_competitor_data,
             desktop_competitor_data=desktop_competitor_data,
+            filter_criteria=filter_criteria,
         )
 
     except Exception as e:

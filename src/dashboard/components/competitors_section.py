@@ -9,8 +9,9 @@ from typing import List
 
 import streamlit as st
 
-from src.application.dto.dashboard_dtos import BrandRanking, CompetitorData
+from src.application.dto.dashboard_dtos import BrandRanking, CompetitorData, FilterCriteria
 from src.dashboard.components.charts import create_competitor_evolution_chart
+from src.dashboard.components.filters import display_active_filters
 
 
 def render_rankings_table(rankings: List[BrandRanking]):
@@ -60,7 +61,9 @@ def render_rankings_table(rankings: List[BrandRanking]):
 
 
 def render_competitor_section(
-    mobile_competitor_data: CompetitorData, desktop_competitor_data: CompetitorData
+    mobile_competitor_data: CompetitorData,
+    desktop_competitor_data: CompetitorData,
+    filter_criteria: FilterCriteria,
 ):
     """
     Render the complete competitors section.
@@ -71,6 +74,9 @@ def render_competitor_section(
     """
     st.markdown("---")
     st.markdown('<h2 class="highlight">🏆 Competitor Rankings</h2>', unsafe_allow_html=True)
+
+    # Display active filters for the competitors section
+    display_active_filters(filter_criteria)
 
     # Create two columns for mobile and desktop
     col1, col2 = st.columns([2,5]) 
