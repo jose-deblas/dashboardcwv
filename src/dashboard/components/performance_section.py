@@ -9,9 +9,10 @@ from typing import List
 
 import streamlit as st
 
-from src.application.dto.dashboard_dtos import DeviceMetrics, TimeSeriesPoint
+from src.application.dto.dashboard_dtos import DeviceMetrics, TimeSeriesPoint, FilterCriteria
 from src.dashboard.components.charts import create_performance_evolution_chart
 from src.dashboard.components.styles import get_weather_give_traffic_light_color
+from src.dashboard.components.filters import display_active_filters
 
 
 def render_device_metrics(device_metrics: DeviceMetrics):
@@ -71,6 +72,7 @@ def render_performance_section(
     desktop_metrics: DeviceMetrics,
     mobile_time_series: List[TimeSeriesPoint],
     desktop_time_series: List[TimeSeriesPoint],
+    filter_criteria: FilterCriteria
 ):
     """
     Render the complete performance section.
@@ -86,6 +88,9 @@ def render_performance_section(
         unsafe_allow_html=True,
         help="The Core Web Vitals performance score is based on real-world user data (field data) and is determined by three metrics: Largest Contentful Paint (LCP), Interaction to Next Paint (INP), and Cumulative Layout Shift (CLS)"
     )
+
+    # Display active filters for the performance section
+    display_active_filters(filter_criteria)
 
     col1, col2 = st.columns(2)
 
