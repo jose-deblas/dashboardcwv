@@ -7,7 +7,7 @@ Following Clean Architecture principles with immutable dataclasses.
 
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 
 @dataclass(frozen=True)
@@ -35,6 +35,9 @@ class DeviceMetrics:
     """
     Performance metrics for a specific device.
     """
+
+    TARGET_MOBILE: ClassVar[int] = 60
+    TARGET_DESKTOP: ClassVar[int] = 80
 
     device: str
     start_score: Optional[float]
@@ -84,6 +87,20 @@ class DeviceMetrics:
             return "red"
         else:
             return "amber"
+
+    @property
+    def target(self) -> str:
+        """
+        Returns what's the goal or target that we want to achieve
+
+        Returns:
+            TARGET_MOBILE for mobile devices and TARGET_DESKTOP for desktop devices
+        """
+        if self.device == "mobile":
+            return f"{self.TARGET_MOBILE}"
+        else:
+            return f"{self.TARGET_DESKTOP}"
+           
 
 
 @dataclass(frozen=True)

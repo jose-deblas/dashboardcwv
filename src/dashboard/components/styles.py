@@ -1,29 +1,8 @@
 """
 Dashboard styling and CSS utilities.
 
-This module provides CSS styles for the dashboard, including
-traffic light indicators.
+This module provides CSS styles for the dashboard
 """
-
-def get_weather_give_traffic_light_color(color: str) -> str:
-    """
-    Return a unicode character representing the traffic light indicator.
-
-    Args:
-        color: Traffic light color ('green', 'amber', or 'red')
-
-    Returns:
-        Unicode character for sun/cloud/storm
-    """
-    if color == 'green':
-        return '☀️'  # Sun for green
-    elif color == 'amber':
-        return '⛅'  # Cloudy for amber
-    elif color == 'red':
-        return '🌩️'  # Storm for red
-    else:
-        return '❓'  # Unknown
-
 
 def get_growth_color(growth_rate: float | None) -> str:
     """
