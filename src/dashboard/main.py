@@ -53,6 +53,10 @@ def get_container() -> Container:
     container.config.pagespeed.initial_backoff.from_env("PAGESPEED_INITIAL_BACKOFF", as_=int, default=1)
     container.config.pagespeed.backoff_multiplier.from_env("PAGESPEED_BACKOFF_MULTIPLIER", as_=int, default=2)
 
+    # Chart thresholds (defaults)
+    container.config.thresholds.red.from_env("THRESHOLD_RED", as_=int, default=40)
+    container.config.thresholds.green.from_env("THRESHOLD_GREEN", as_=int, default=60)
+
     return container
 
 
