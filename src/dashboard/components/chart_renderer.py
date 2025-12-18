@@ -78,6 +78,30 @@ class ChartRenderer:
                     hovertemplate="Desktop: %{y:.2f}<extra></extra>",
                 )
             )
+        
+        # Layout
+        fig.update_layout(
+            title=dict(
+                text=f" Performance Score Evolution",
+            ),
+            xaxis=dict(
+                showgrid=True,
+            ),
+            yaxis=dict(
+                title="Performance Score",
+                showgrid=True,
+            ),
+            hovermode="x unified",
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(size=12),
+            ),
+            height=500,
+        )
 
         self._add_threshold_lines(fig)
         return fig
@@ -144,6 +168,30 @@ class ChartRenderer:
                 )
             )
 
+        # Layout
+        fig.update_layout(
+            title=dict(
+                text=f" {device.capitalize()} Evolution",
+            ),
+            xaxis=dict(
+                showgrid=True,
+            ),
+            yaxis=dict(
+                title="Performance Score",
+                showgrid=True,
+                range=[min_score, max_score],
+            ),
+            hovermode="x unified",
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(size=12),
+            ),
+            height=500,
+        )
 
         self._add_threshold_lines(fig)
         return fig
