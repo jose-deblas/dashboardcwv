@@ -34,6 +34,7 @@ from src.application.use_cases.dashboard.get_performance_data_use_case import (
 from src.application.use_cases.dashboard.get_competitor_data_use_case import (
     GetCompetitorDataUseCase,
 )
+from src.dashboard.components.chart_renderer import ChartRenderer
 
 
 class Container(containers.DeclarativeContainer):
@@ -121,4 +122,11 @@ class Container(containers.DeclarativeContainer):
         GetCompetitorDataUseCase,
         dashboard_repository=dashboard_repository,
         brand_repository=brand_repository,
+    )
+
+    # Chart renderer (UI concern) - thresholds are provided via config
+    chart_renderer = providers.Factory(
+        ChartRenderer,
+        red_threshold=config.thresholds.red,
+        green_threshold=config.thresholds.green,
     )

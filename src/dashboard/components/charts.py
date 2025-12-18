@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from src.application.dto.dashboard_dtos import TimeSeriesPoint
+from src.dashboard.components.chart_renderer import ChartRenderer
 
 
 def create_performance_evolution_chart(
@@ -27,77 +28,9 @@ def create_performance_evolution_chart(
     Returns:
         Plotly Figure object
     """
-    fig = go.Figure()
-
-    all_dates = []
-    if mobile_data:
-        all_dates.extend([point.execution_date for point in mobile_data])
-    if desktop_data:
-        all_dates.extend([point.execution_date for point in desktop_data]) 
-    if all_dates:
-        min_date = min(all_dates)
-        max_date = max(all_dates)
-
-    # Mobile trace
-    if mobile_data:
-        mobile_dates = [point.execution_date for point in mobile_data]
-        mobile_scores = [point.avg_performance_score for point in mobile_data]
-
-        fig.add_trace(
-            go.Scatter(
-                x=mobile_dates,
-                y=mobile_scores,
-                mode="lines+markers",
-                name="Mobile",
-                line=dict(color="red", width=3), #line=dict(color="#a7f9ab", width=3),
-                marker=dict(size=8),
-                hovertemplate="Mobile: %{y:.2f}<extra></extra>",
-            )
-        )
-
-    # Desktop trace
-    if desktop_data:
-        desktop_dates = [point.execution_date for point in desktop_data]
-        desktop_scores = [point.avg_performance_score for point in desktop_data]
-
-        fig.add_trace(
-            go.Scatter(
-                x=desktop_dates,
-                y=desktop_scores,
-                mode="lines+markers",
-                name="Desktop",
-                line=dict(color="royalblue", width=3),
-                marker=dict(size=8),
-                hovertemplate="Desktop: %{y:.2f}<extra></extra>",
-            )
-        )
-
-    # Layout
-    fig.update_layout(
-        title=dict(
-            text=f" Performance Score Evolution",
-        ),
-        xaxis=dict(
-            showgrid=True,
-        ),
-        yaxis=dict(
-            title="Performance Score",
-            showgrid=True,
-            range=[min_date, max_date],
-        ),
-        hovermode="x unified",
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-            font=dict(size=12),
-        ),
-        height=500,
-    )
-
-    return fig
+    renderer = ChartRenderer()
+    
+    return renderer.create_performance_evolution_chart(mobile_data=mobile_data, desktop_data=desktop_data)
 
 
 def create_competitor_evolution_chart(
@@ -118,84 +51,10 @@ def create_competitor_evolution_chart(
     Returns:
         Plotly Figure object
     """
-    fig = go.Figure()
-
-    # Group data by brand
-    brands = {}
-    for point in time_series_data:
-        if point.brand not in brands:
-            brands[point.brand] = {"dates": [], "scores": []}
-        brands[point.brand]["dates"].append(point.execution_date)
-        brands[point.brand]["scores"].append(point.avg_performance_score)
-
-    #take the min and max score to set y axis range
-    all_scores = []
-    for data in brands.values():
-        all_scores.extend(data["scores"])
-    if all_scores:
-        min_score = min(all_scores) - 1
-        max_score = max(all_scores) + 1
-
-    # Build color palette for target brands
-    if target_brand_colors is None:
-        # Default colors for target brands if not provided
-        target_colors = ["red", "royalblue", "purple", "cyan"]
-        target_brand_colors = {
-            brand: target_colors[i % len(target_colors)]
-            for i, brand in enumerate(target_brands)
-        }
-
-    # Default colors for non-target brands
-    default_colors = ["green", "yellow", "orange", "pink", "silver"]
-    color_idx = 0
-
-    # Add trace for each brand
-    for brand, data in brands.items():
-        if brand in target_brands:
-            color = target_brand_colors.get(brand, "#a7f9ab")
-            line_width = 3
-            marker_size = 6
-        else:
-            color = default_colors[color_idx % len(default_colors)]
-            color_idx += 1
-            line_width = 2
-            marker_size = 4
-
-        fig.add_trace(
-            go.Scatter(
-                x=data["dates"],
-                y=data["scores"],
-                mode="lines+markers",
-                name=brand,
-                line=dict(color=color, width=line_width),
-                marker=dict(size=marker_size),
-                hovertemplate=f"<b>{brand}</b>: %{{y:.2f}}<extra></extra>",
-            )
-        )
-
-    # Layout
-    fig.update_layout(
-        title=dict(
-            text=f" {device.capitalize()} Evolution",
-        ),
-        xaxis=dict(
-            showgrid=True,
-        ),
-        yaxis=dict(
-            title="Performance Score",
-            showgrid=True,
-            range=[min_score, max_score],
-        ),
-        hovermode="x unified",
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-            font=dict(size=12),
-        ),
-        height=500,
+    renderer = ChartRenderer()
+    return renderer.create_competitor_evolution_chart(
+        time_series_data=time_series_data,
+        device=device,
+        target_brands=target_brands,
+        target_brand_colors=target_brand_colors,
     )
-
-    return fig
