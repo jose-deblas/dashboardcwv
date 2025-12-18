@@ -25,6 +25,25 @@ def get_weather_give_traffic_light_color(color: str) -> str:
         return '❓'  # Unknown
 
 
+def get_growth_color(growth_rate: float | None) -> str:
+    """
+    Return a hex color string for a growth rate.
+
+    Args:
+        growth_rate: Percentage growth (e.g. 12.34) or None
+
+    Returns:
+        Hex color string: green for positive, red for negative, gray for zero/None.
+    """
+    if growth_rate is None:
+        return "#6c757d"  # neutral gray
+    if growth_rate > 0:
+        return "#16a34a"  # green
+    if growth_rate < 0:
+        return "#dc2626"  # red
+    return "#6c757d"  # zero => neutral
+
+
 def get_metric_card_html(
     label: str, value: float, delta: float = None, device: str = None
 ) -> str:

@@ -53,6 +53,21 @@ class DeviceMetrics:
         return self.end_score - self.start_score
 
     @property
+    def growth_rate(self) -> Optional[float]:
+        """
+        Calculate the growth rate (percentage) from start to end.
+
+        Returns:
+            Growth rate in percent (e.g. 12.34 for +12.34%), or None if not available
+            or if the start score is zero (to avoid division by zero).
+        """
+        if self.start_score is None or self.end_score is None:
+            return None
+        if self.start_score == 0:
+            return None
+        return (self.end_score - self.start_score) / self.start_score * 100
+
+    @property
     def traffic_light(self) -> str:
         """
         Determine traffic light color based on score delta.
