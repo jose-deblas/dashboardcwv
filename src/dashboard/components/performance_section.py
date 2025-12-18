@@ -11,7 +11,7 @@ import streamlit as st
 
 from src.application.dto.dashboard_dtos import DeviceMetrics, TimeSeriesPoint, FilterCriteria
 from src.dashboard.components.charts import create_performance_evolution_chart
-from src.dashboard.components.styles import get_weather_give_traffic_light_color, get_growth_color
+from src.dashboard.components.styles import get_growth_color
 from src.dashboard.components.filters import display_active_filters
 
 
@@ -64,13 +64,8 @@ def render_device_metrics(device_metrics: DeviceMetrics):
         )
 
     with col3:
-        weather_character = get_weather_give_traffic_light_color(device_metrics.traffic_light)
-        st.markdown(f"<h2>{weather_character}</h2>", unsafe_allow_html=True)
-        
-        # Growth rate should be provided by the DeviceMetrics DTO (domain/application layer)
         growth_rate = getattr(device_metrics, "growth_rate", None)
 
-        # Format and color the growth rate using style helper
         if growth_rate is None:
             growth_text = "N/A"
         else:
@@ -79,8 +74,9 @@ def render_device_metrics(device_metrics: DeviceMetrics):
 
         growth_color = get_growth_color(growth_rate)
 
+        st.markdown(f"<h2 style='margin-top:10px;color:{growth_color}'>{growth_text}</h2>", unsafe_allow_html=True)
         st.markdown(
-            f"<div style='font-size:1.1em;font-weight:600;margin-top:6px;color:{growth_color}'>Growth: {growth_text}</div>",
+            f"<div style='font-size:1.1em;font-weight:600;margin-top:-7px;'>Target: {device_metrics.target}</div>",
             unsafe_allow_html=True,
         )
 
