@@ -141,7 +141,7 @@ class ChartRenderer:
             }
 
         # Default colors for non-target brands
-        default_colors = ["green", "yellow", "orange", "pink", "silver"]
+        default_colors = ["green", "orange", "skyblue", "pink", "silver"]
         color_idx = 0
 
         # Add trace for each brand

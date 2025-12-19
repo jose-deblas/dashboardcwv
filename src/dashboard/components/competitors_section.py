@@ -73,7 +73,12 @@ def render_competitor_section(
         desktop_competitor_data: Competitor data for desktop
     """
     st.markdown("---")
-    st.markdown('<h2 class="highlight">🏆 Competitor Rankings</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<h2 class="highlight">🏆 Competitor Rankings</h2>',
+        unsafe_allow_html=True,
+        help="Competitor rankings are based on the average Performance Score over the last date in the range. "
+        "We take into account the selected filters to show competitors data.",
+    )
 
     # Display active filters for the competitors section
     display_active_filters(filter_criteria)

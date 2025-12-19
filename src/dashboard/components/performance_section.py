@@ -99,7 +99,8 @@ def render_performance_section(
     st.markdown(
         '<h2 class="highlight">📊 Performance Score</h2>',
         unsafe_allow_html=True,
-        help="The Core Web Vitals performance score is based on real-world user data (field data) and is determined by three metrics: Largest Contentful Paint (LCP), Interaction to Next Paint (INP), and Cumulative Layout Shift (CLS)"
+        help="The Performance Score found in tools like Google Lighthouse and PageSpeed Insights is a single 0–100 value. It is actually a weighted average of several lab metrics, including the three Core Web Vitals (LCP, CLS, and INP/TBT). " \
+        "The final Performance Score is determined by assigning different weights to each metric"
     )
 
     # Display active filters for the performance section
