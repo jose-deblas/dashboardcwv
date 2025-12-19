@@ -141,8 +141,6 @@ def main():
                 filter_criteria, "desktop"
             )
         
-        # display_active_filters(st.session_state.filter_criteria)
-
         # Render performance section
         render_performance_section(
             mobile_metrics=performance_metrics.mobile_metrics,
