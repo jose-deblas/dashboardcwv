@@ -40,10 +40,20 @@ def render_device_metrics(device_metrics: DeviceMetrics):
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     # Start score
     with col1:
+        start_score_value = f"{device_metrics.start_score:.2f}" if device_metrics.start_score is not None else "N/A"
+        st.metric(
+            "**Target**",
+            value=device_metrics.target + ".00",
+            delta=None,
+            width="content",
+        )
+
+    # Start score
+    with col2:
         start_score_value = f"{device_metrics.start_score:.2f}" if device_metrics.start_score is not None else "N/A"
         st.metric(
             "**Initial Date**",
@@ -53,7 +63,7 @@ def render_device_metrics(device_metrics: DeviceMetrics):
         )
 
     # End score
-    with col2:
+    with col3:
         end_score_value = f"{device_metrics.end_score:.2f}" if device_metrics.end_score is not None else "N/A"
         delta_value = f"{device_metrics.delta:.2f}" if device_metrics.delta is not None else None
         st.metric(
@@ -63,7 +73,7 @@ def render_device_metrics(device_metrics: DeviceMetrics):
             width="content",
         )
 
-    with col3:
+    with col4:
         growth_rate = getattr(device_metrics, "growth_rate", None)
 
         if growth_rate is None:
@@ -75,10 +85,6 @@ def render_device_metrics(device_metrics: DeviceMetrics):
         growth_color = get_growth_color(growth_rate)
 
         st.markdown(f"<h2 style='margin-top:10px;color:{growth_color}'>{growth_text}</h2>", unsafe_allow_html=True)
-        st.markdown(
-            f"<div style='font-size:1.1em;font-weight:600;margin-top:-7px;'>Target: {device_metrics.target}</div>",
-            unsafe_allow_html=True,
-        )
 
 def render_performance_section(
     mobile_metrics: DeviceMetrics,

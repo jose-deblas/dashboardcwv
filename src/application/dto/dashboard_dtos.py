@@ -36,7 +36,7 @@ class DeviceMetrics:
     Performance metrics for a specific device.
     """
 
-    TARGET_MOBILE: ClassVar[int] = 60
+    TARGET_MOBILE: ClassVar[int] = 65
     TARGET_DESKTOP: ClassVar[int] = 80
 
     device: str
