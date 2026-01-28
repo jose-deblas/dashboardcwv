@@ -1,32 +1,32 @@
 """
 Performance section component.
 
-This module provides the performance section of the dashboard,
-including metrics cards and evolution charts.
+Pure rendering component that consumes view models.
+No business logic or calculations - all data is pre-formatted in view models.
 """
-
-from typing import List
 
 import streamlit as st
 
-from src.application.dto.dashboard_dtos import DeviceMetrics, TimeSeriesPoint, FilterCriteria
-from src.dashboard.components.charts import create_performance_evolution_chart
-from src.dashboard.components.styles import get_growth_color
-from src.dashboard.components.filters import display_active_filters
+from src.presentation.models.performance_view_model import (
+    DeviceMetricsViewModel,
+    PerformanceViewModel,
+)
+from src.presentation.models.chart_view_model import ChartViewModel
+from src.dashboard.adapters.streamlit_chart_adapter import StreamlitChartAdapter
 
 
-def render_device_metrics(device_metrics: DeviceMetrics):
+def render_device_metrics(device_vm: DeviceMetricsViewModel):
     """
     Render performance metrics for a single device.
 
-    Args:
-        device_metrics: Device metrics to display
-    """
-    device_label = device_metrics.device.capitalize()
+    Pure rendering - all data pre-formatted in view model.
 
+    Args:
+        device_vm: Device metrics view model with pre-formatted values
+    """
     # Check if we have data
-    if device_metrics.start_score is None and device_metrics.end_score is None:
-        st.warning(f"No data available for {device_label}")
+    if not device_vm.has_data:
+        st.warning(f"No data available for {device_vm.device_label}")
         return
 
     st.markdown(
@@ -42,95 +42,87 @@ def render_device_metrics(device_metrics: DeviceMetrics):
 
     col1, col2, col3, col4 = st.columns(4)
 
-    # Start score
+    # Target
     with col1:
-        start_score_value = f"{device_metrics.start_score:.2f}" if device_metrics.start_score is not None else "N/A"
         st.metric(
             "**Target**",
-            value=device_metrics.target + ".00",
+            value=device_vm.target_card.value,
             delta=None,
             width="content",
         )
 
-    # Start score
+    # Initial date score
     with col2:
-        start_score_value = f"{device_metrics.start_score:.2f}" if device_metrics.start_score is not None else "N/A"
         st.metric(
             "**Initial Date**",
-            value=start_score_value,
+            value=device_vm.start_date_card.value,
             delta=None,
             width="content",
         )
 
-    # End score
+    # End date score
     with col3:
-        end_score_value = f"{device_metrics.end_score:.2f}" if device_metrics.end_score is not None else "N/A"
-        delta_value = f"{device_metrics.delta:.2f}" if device_metrics.delta is not None else None
         st.metric(
             "**End Date**",
-            value=end_score_value,
-            delta=delta_value,
+            value=device_vm.end_date_card.value,
+            delta=device_vm.end_date_card.delta,
             width="content",
         )
 
+    # Growth rate
     with col4:
-        growth_rate = getattr(device_metrics, "growth_rate", None)
+        # Map semantic color names to hex codes
+        color_map = {
+            "green": "#16a34a",
+            "red": "#dc2626",
+            "neutral": "#6c757d",
+        }
+        growth_color = color_map.get(device_vm.growth_rate_color, "#6c757d")
 
-        if growth_rate is None:
-            growth_text = "N/A"
-        else:
-            sign = "+" if growth_rate > 0 else ""
-            growth_text = f"{sign}{growth_rate:.2f}%"
-
-        growth_color = get_growth_color(growth_rate)
-
-        st.markdown(f"<h2 style='margin-top:10px;color:{growth_color}'>{growth_text}</h2>", unsafe_allow_html=True)
+        st.markdown(
+            f"<h2 style='margin-top:10px;color:{growth_color}'>{device_vm.growth_rate_display}</h2>",
+            unsafe_allow_html=True,
+        )
 
 def render_performance_section(
-    mobile_metrics: DeviceMetrics,
-    desktop_metrics: DeviceMetrics,
-    mobile_time_series: List[TimeSeriesPoint],
-    desktop_time_series: List[TimeSeriesPoint],
-    filter_criteria: FilterCriteria
+    performance_vm: PerformanceViewModel, chart_vm: ChartViewModel
 ):
     """
     Render the complete performance section.
 
+    Pure rendering from view models - no business logic.
+
     Args:
-        mobile_metrics: Mobile device metrics
-        desktop_metrics: Desktop device metrics
-        mobile_time_series: Mobile time series data
-        desktop_time_series: Desktop time series data
+        performance_vm: Complete performance view model
+        chart_vm: Chart view model for performance evolution
     """
+
     st.markdown(
-        '<h2 class="highlight">📊 Performance Score</h2>',
+        '<h2 class="highlight">📊 Performance Score <span title="The Performance Score found in tools like Google Lighthouse and PageSpeed Insights is a single 0–100 value. It is actually a weighted average of several lab metrics, including the three Core Web Vitals (LCP, CLS, and INP/TBT). The final Performance Score is determined by assigning different weights to each metric." style="font-size:0.5em; margin-left:6px; vertical-align:middle; cursor:help;">ℹ️</span></h2>',
         unsafe_allow_html=True,
-        help="The Performance Score found in tools like Google Lighthouse and PageSpeed Insights is a single 0–100 value. It is actually a weighted average of several lab metrics, including the three Core Web Vitals (LCP, CLS, and INP/TBT). " \
-        "The final Performance Score is determined by assigning different weights to each metric"
     )
 
-    # Display active filters for the performance section
-    display_active_filters(filter_criteria)
+    # Display active filters
+    for filter_text in performance_vm.active_filters_display:
+        st.info(filter_text)
 
     col1, col2 = st.columns(2)
 
     with col1.container(border=True, height="stretch"):
         st.markdown("### 📱 Mobile")
-        render_device_metrics(mobile_metrics)
+        render_device_metrics(performance_vm.mobile)
 
     with col2.container(border=True, height="stretch"):
         st.markdown("### 💻 Desktop")
-        render_device_metrics(desktop_metrics)
+        render_device_metrics(performance_vm.desktop)
 
-    
     # Evolution chart
-    if not mobile_time_series and not desktop_time_series:
+    if not performance_vm.has_time_series_data:
         st.warning("No time series data available for the selected filters")
     else:
         col1 = st.container()
-        with col1.container(border=True, height="stretch"):            
-            fig = create_performance_evolution_chart(
-                mobile_data=mobile_time_series,
-                desktop_data=desktop_time_series,
-            )
+        with col1.container(border=True, height="stretch"):
+            # Convert chart VM to Plotly figure using adapter
+            chart_adapter = StreamlitChartAdapter()
+            fig = chart_adapter.render_chart(chart_vm)
             st.plotly_chart(fig, use_container_width=True)

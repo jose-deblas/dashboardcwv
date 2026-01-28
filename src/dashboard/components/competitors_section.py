@@ -1,48 +1,45 @@
 """
 Competitors section component.
 
-This module provides the competitors section of the dashboard,
-including rankings and evolution charts.
+Pure rendering component that consumes view models.
+No business logic - medals, highlighting, and styling are pre-computed.
 """
 
 from typing import List
 
 import streamlit as st
 
-from src.application.dto.dashboard_dtos import BrandRanking, CompetitorData, FilterCriteria
-from src.dashboard.components.charts import create_competitor_evolution_chart
-from src.dashboard.components.filters import display_active_filters
+from src.presentation.models.competitor_view_model import (
+    RankingViewModel,
+    CompetitorViewModel,
+)
+from src.presentation.models.chart_view_model import ChartViewModel
+from src.dashboard.adapters.streamlit_chart_adapter import StreamlitChartAdapter
 
 
-def render_rankings_table(rankings: List[BrandRanking]):
+def render_rankings_table(rankings: List[RankingViewModel]):
     """
     Render brand rankings table.
 
+    Pure rendering - medals and highlighting pre-computed in view model.
+
     Args:
-        rankings: List of brand rankings
+        rankings: List of ranking view models
     """
     if not rankings:
         st.warning("No ranking data available")
         return
 
-    # Create ranking display
+    # Render each ranking
     for ranking in rankings:
-        medal = ""
-        if ranking.rank == 1:
-            medal = "🥇"
-        elif ranking.rank == 2:
-            medal = "🥈"
-        elif ranking.rank == 3:
-            medal = "🥉"
-
-        # Highlight target brands
-        if ranking.is_target_brand:
+        # Highlight target brands with special styling
+        if ranking.is_highlighted:
             st.markdown(
                 f"""
                 <div style="background-color: #2d3748; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #a7f9ab;">
-                    <span style="font-size: 24px; font-weight: bold; color: #a7f9ab;"">{medal} #{ranking.rank}</span>
+                    <span style="font-size: 24px; font-weight: bold; color: #a7f9ab;"">{ranking.medal} #{ranking.rank}</span>
                     <span style="font-size: 20px; font-weight: bold; margin-left: 15px; color: #a7f9ab;">{ranking.brand}</span>
-                    <span style="float: right; font-size: 24px; font-weight: bold; color: #a7f9ab;"">{ranking.avg_performance_score:.2f}</span>
+                    <span style="float: right; font-size: 24px; font-weight: bold; color: #a7f9ab;"">{ranking.score}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -51,9 +48,9 @@ def render_rankings_table(rankings: List[BrandRanking]):
             st.markdown(
                 f"""
                 <div style="padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid;">
-                    <span style="font-size: 24px; font-weight: bold;">{medal} #{ranking.rank}</span>
+                    <span style="font-size: 24px; font-weight: bold;">{ranking.medal} #{ranking.rank}</span>
                     <span style="font-size: 20px; margin-left: 15px;">{ranking.brand}</span>
-                    <span style="float: right; font-size: 24px; font-weight: bold;">{ranking.avg_performance_score:.2f}</span>
+                    <span style="float: right; font-size: 24px; font-weight: bold;">{ranking.score}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -61,68 +58,56 @@ def render_rankings_table(rankings: List[BrandRanking]):
 
 
 def render_competitor_section(
-    mobile_competitor_data: CompetitorData,
-    desktop_competitor_data: CompetitorData,
-    filter_criteria: FilterCriteria,
+    competitor_vm: CompetitorViewModel,
+    mobile_chart_vm: ChartViewModel,
+    desktop_chart_vm: ChartViewModel,
 ):
     """
     Render the complete competitors section.
 
+    Pure rendering from view models - no business logic.
+
     Args:
-        mobile_competitor_data: Competitor data for mobile
-        desktop_competitor_data: Competitor data for desktop
+        competitor_vm: Complete competitor view model
+        mobile_chart_vm: Chart view model for mobile evolution
+        desktop_chart_vm: Chart view model for desktop evolution
     """
     st.markdown("---")
     st.markdown(
-        '<h2 class="highlight">🏆 Competitor Rankings</h2>',
+        '<h2 class="highlight">🏆 Competitor Rankings <span title="Competitor rankings are based on the average Performance Score over the last date in the range. We take into account the selected filters to show competitors data." style="font-size:0.5em; margin-left:6px; vertical-align:middle; cursor:help;">ℹ️</span></h2>',
         unsafe_allow_html=True,
-        help="Competitor rankings are based on the average Performance Score over the last date in the range. "
-        "We take into account the selected filters to show competitors data.",
     )
 
-    # Display active filters for the competitors section
-    display_active_filters(filter_criteria)
+    # Display active filters
+    for filter_text in competitor_vm.active_filters_display:
+        st.info(filter_text)
 
-    # Create two columns for mobile and desktop
-    col1, col2 = st.columns([2,5]) 
+    # Mobile section
+    col1, col2 = st.columns([2, 5])
 
     with col1.container(border=True, height="stretch"):
         st.markdown("#### 📱 Mobile Ranking")
-        render_rankings_table(mobile_competitor_data.rankings)
+        render_rankings_table(competitor_vm.mobile_rankings)
 
     with col2.container(border=True, height="stretch"):
-        # Mobile evolution
-        if mobile_competitor_data.time_series:
-            # Extract target brands from rankings
-            target_brands = [
-                r.brand for r in mobile_competitor_data.rankings if r.is_target_brand
-            ]
-            fig_mobile = create_competitor_evolution_chart(
-                time_series_data=mobile_competitor_data.time_series,
-                device="mobile",
-                target_brands=target_brands,
-            )
-            st.plotly_chart(fig_mobile, use_container_width=True)
+        if competitor_vm.has_mobile_time_series:
+            chart_adapter = StreamlitChartAdapter()
+            fig = chart_adapter.render_chart(mobile_chart_vm)
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("No mobile competitor time series data available")
 
-    col1, col2 = st.columns([2,5]) 
+    # Desktop section
+    col1, col2 = st.columns([2, 5])
 
     with col1.container(border=True, height="stretch"):
         st.markdown("#### 💻 Desktop Ranking")
-        render_rankings_table(desktop_competitor_data.rankings)
+        render_rankings_table(competitor_vm.desktop_rankings)
 
-    with col2.container(border=True, height="stretch"):        
-        if desktop_competitor_data.time_series:
-            # Extract target brands from rankings
-            target_brands = [
-                r.brand for r in desktop_competitor_data.rankings if r.is_target_brand
-            ]
-            fig_desktop = create_competitor_evolution_chart(
-                time_series_data=desktop_competitor_data.time_series,
-                device="desktop",
-                target_brands=target_brands,
-            )
-            st.plotly_chart(fig_desktop, use_container_width=True)
+    with col2.container(border=True, height="stretch"):
+        if competitor_vm.has_desktop_time_series:
+            chart_adapter = StreamlitChartAdapter()
+            fig = chart_adapter.render_chart(desktop_chart_vm)
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("No desktop competitor time series data available")

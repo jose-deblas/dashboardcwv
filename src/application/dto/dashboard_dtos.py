@@ -7,7 +7,7 @@ Following Clean Architecture principles with immutable dataclasses.
 
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Optional, ClassVar
+from typing import List, Optional
 
 
 @dataclass(frozen=True)
@@ -16,6 +16,9 @@ class FilterCriteria:
     Criteria for filtering dashboard data.
 
     All filter fields are optional. None means no filter applied for that field.
+
+    Note: Validation moved to FilterValidator in application.validation module.
+    Use FilterValidator.validate_date_range() before creating this DTO.
     """
 
     start_date: date
@@ -24,83 +27,22 @@ class FilterCriteria:
     countries: Optional[List[str]] = None
     page_types: Optional[List[str]] = None
 
-    def __post_init__(self):
-        """Validate filter criteria."""
-        if self.start_date > self.end_date:
-            raise ValueError("start_date must be before or equal to end_date")
-
 
 @dataclass(frozen=True)
 class DeviceMetrics:
     """
     Performance metrics for a specific device.
-    """
 
-    TARGET_MOBILE: ClassVar[int] = 65
-    TARGET_DESKTOP: ClassVar[int] = 80
+    Pure data container - no presentation logic.
+
+    Note: Presentation logic (delta, growth_rate, colors, targets) moved to
+    PerformancePresenter in presentation.presenters module. This DTO now contains
+    only raw business data.
+    """
 
     device: str
     start_score: Optional[float]
     end_score: Optional[float]
-
-    @property
-    def delta(self) -> Optional[float]:
-        """
-        Calculate the change in score from start to end.
-
-        Returns:
-            Score delta (end - start), or None if either score is missing.
-        """
-        if self.start_score is None or self.end_score is None:
-            return None
-        return self.end_score - self.start_score
-
-    @property
-    def growth_rate(self) -> Optional[float]:
-        """
-        Calculate the growth rate (percentage) from start to end.
-
-        Returns:
-            Growth rate in percent (e.g. 12.34 for +12.34%), or None if not available
-            or if the start score is zero (to avoid division by zero).
-        """
-        if self.start_score is None or self.end_score is None:
-            return None
-        if self.start_score == 0:
-            return None
-        return (self.end_score - self.start_score) / self.start_score * 100
-
-    @property
-    def traffic_light(self) -> str:
-        """
-        Determine traffic light color based on score delta.
-
-        Returns:
-            'green' for positive change, 'red' for negative, 'amber' for no change or missing data.
-        """
-        delta = self.delta
-        if delta is None:
-            return "amber"
-        if delta > 0:
-            return "green"
-        elif delta < 0:
-            return "red"
-        else:
-            return "amber"
-
-    @property
-    def target(self) -> str:
-        """
-        Returns what's the goal or target that we want to achieve
-
-        Returns:
-            TARGET_MOBILE for mobile devices and TARGET_DESKTOP for desktop devices
-        """
-        if self.device == "mobile":
-            return f"{self.TARGET_MOBILE}"
-        else:
-            return f"{self.TARGET_DESKTOP}"
-           
 
 
 @dataclass(frozen=True)

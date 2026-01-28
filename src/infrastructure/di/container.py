@@ -34,6 +34,11 @@ from src.application.use_cases.dashboard.get_performance_data_use_case import (
 from src.application.use_cases.dashboard.get_competitor_data_use_case import (
     GetCompetitorDataUseCase,
 )
+from src.application.validation.filter_validator import FilterValidator
+from src.presentation.presenters.performance_presenter import PerformancePresenter
+from src.presentation.presenters.competitor_presenter import CompetitorPresenter
+from src.presentation.presenters.filter_presenter import FilterPresenter
+from src.presentation.charts.chart_builder import ChartBuilder
 from src.dashboard.components.chart_renderer import ChartRenderer
 
 
@@ -124,7 +129,22 @@ class Container(containers.DeclarativeContainer):
         brand_repository=brand_repository,
     )
 
-    # Chart renderer (UI concern) - thresholds are provided via config
+    # Presentation Layer (framework-agnostic)
+    performance_presenter = providers.Factory(PerformancePresenter)
+
+    competitor_presenter = providers.Factory(CompetitorPresenter)
+
+    filter_presenter = providers.Factory(FilterPresenter)
+
+    filter_validator = providers.Factory(FilterValidator)
+
+    chart_builder = providers.Factory(
+        ChartBuilder,
+        red_threshold=config.thresholds.red,
+        green_threshold=config.thresholds.green,
+    )
+
+    # Chart renderer (UI concern) - kept for backward compatibility with adapters
     chart_renderer = providers.Factory(
         ChartRenderer,
         red_threshold=config.thresholds.red,

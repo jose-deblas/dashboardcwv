@@ -1,28 +1,38 @@
 """
 Dashboard filter components.
 
-This module provides the filter form for the dashboard.
+Pure rendering component for filter form.
+Validation delegated to FilterValidator.
 """
 
 from datetime import date
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import streamlit as st
 
-from src.application.dto.dashboard_dtos import FilterCriteria, FilterOptions
+from src.application.dto.dashboard_dtos import FilterCriteria
+from src.application.validation.filter_validator import (
+    FilterValidator,
+    FilterValidationError,
+)
+from src.presentation.models.filter_view_model import FilterOptionsViewModel
 
 
-def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
+def render_filters(
+    options_vm: FilterOptionsViewModel, validator: FilterValidator
+) -> Optional[FilterCriteria]:
     """
     Render the dashboard filter form.
 
+    Pure filter form rendering. Validation delegated to FilterValidator.
+
     Args:
-        filter_options: Available filter options from the database
+        options_vm: Filter options view model
+        validator: Filter validator for business rules
 
     Returns:
-        FilterCriteria if form is submitted, None otherwise
+        FilterCriteria if form is submitted and valid, None otherwise
     """
-
     with st.form(key="dashboard_filters"):
         col1, col2, col3, col4 = st.columns(4)
 
@@ -30,46 +40,43 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
         with col1:
             start_date = st.date_input(
                 "Initial Date",
-                value=filter_options.min_date if filter_options.min_date else date.today(),
-                min_value=filter_options.min_date,
-                max_value=filter_options.max_date,
+                value=options_vm.default_start_date,
+                min_value=options_vm.min_date,
+                max_value=options_vm.max_date,
                 help="Select the initial date for data analysis",
             )
 
         with col2:
             end_date = st.date_input(
                 "End Date",
-                value=filter_options.max_date if filter_options.max_date else date.today(),
-                min_value=filter_options.min_date,
-                max_value=filter_options.max_date,
+                value=options_vm.default_end_date,
+                min_value=options_vm.min_date,
+                max_value=options_vm.max_date,
                 help="Select the end date for data analysis",
             )
 
         # Brand filter
         with col3:
-            brand_options = ["All"] + filter_options.brands
             selected_brand = st.selectbox(
                 "Brand",
-                options=brand_options,
+                options=options_vm.brand_options,
                 index=0,
                 help="Filter by your target brand. Option [All] means that we show the average for our target brands, all those listed in the filter",
             )
 
         # Country filter
         with col4:
-            country_options = ["All"] + filter_options.countries
             selected_country = st.selectbox(
                 "Country",
-                options=country_options,
+                options=options_vm.country_options,
                 index=0,
                 help="Filter by country",
             )
 
         # Page type filter (multiselect)
-        page_type_options = filter_options.page_types
         selected_page_types = st.multiselect(
             "Page Types",
-            options=page_type_options,
+            options=options_vm.page_type_options,
             default=[],
             help="Filter by page types (leave empty for all)",
         )
@@ -82,14 +89,22 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
         )
 
         if submit_button:
-            # Validate dates
-            if start_date > end_date:
-                st.error("Start date must be before or equal to end date")
+            # Validate using injected validator
+            try:
+                validator.validate_date_range(start_date, end_date)
+            except FilterValidationError as e:
+                st.error(str(e))
                 return None
 
-            # Convert "All" selections to None (no filter) except for target brand (all target brands)
-            brands = filter_options.brands if selected_brand == "All" else [selected_brand]
-            countries = None if selected_country == "All" else [selected_country]
+            # Transform selections to FilterCriteria
+            # Remove "All" from brand options to get actual brands list
+            all_brands = [b for b in options_vm.brand_options if b != "All"]
+            brands = (
+                all_brands if selected_brand == "All" else [selected_brand]
+            )
+            countries = (
+                None if selected_country == "All" else [selected_country]
+            )
             page_types = None if not selected_page_types else selected_page_types
 
             return FilterCriteria(
@@ -99,43 +114,5 @@ def render_filters(filter_options: FilterOptions) -> Optional[FilterCriteria]:
                 countries=countries,
                 page_types=page_types,
             )
-    
+
     return None
-
-
-def display_active_filters(filter_criteria: FilterCriteria):
-    """
-    Display the currently active filters.
-
-    Args:
-        filter_criteria: Current filter criteria
-    """
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.info(f"📅 **From** {filter_criteria.start_date} **to** {filter_criteria.end_date}")
-
-    with col2:
-        brands_text = (
-            ", ".join(filter_criteria.brands)
-            if filter_criteria.brands
-            else "All Brands"
-        )
-        st.info(f"🏢 **Brand:** {brands_text}")
-
-    with col3:
-        countries_text = (
-            ", ".join(filter_criteria.countries)
-            if filter_criteria.countries
-            else "All Countries"
-        )
-        st.info(f"🌍 **Country:** {countries_text}")
-
-    with col4:
-        page_types_text = (
-            ", ".join(filter_criteria.page_types)
-            if filter_criteria.page_types
-            else "All Page Types"
-        )
-        st.info(f"📄 **Page Types:** {page_types_text}")
