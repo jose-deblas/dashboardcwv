@@ -20,6 +20,30 @@ This project provides a complete solution for collecting and visualizing Core We
 - 🐳 Fully containerized with Docker
 - 🏗️ Clean Architecture principles
 - 🔌 Dependency injection for testability
+- 🎨 **Framework-agnostic presentation layer** - Easy to add new frontends (HTML, React, API)
+
+## Architecture
+
+This project uses a **Presentation Adapter Pattern** to decouple business logic from UI frameworks:
+
+```
+UI Layer (Streamlit) → Adapters → Presenters → Use Cases → Domain
+```
+
+**Key Benefits:**
+- **Multiple Frontend Support**: Easily add REST APIs, HTML templates, or React without rewriting logic
+- **Better Testability**: Presentation logic isolated and independently testable
+- **Cleaner Code**: Components are pure renderers, DTOs are pure data
+- **Maintainability**: Clear separation of concerns with single source of truth
+
+**Layers:**
+- **Presentation Layer** (`src/presentation/`): Framework-agnostic view models, presenters, and chart builders
+- **Adapters** (`src/dashboard/adapters/`): Streamlit-specific implementations
+- **Application Layer** (`src/application/`): Use cases, DTOs, and validators
+- **Domain Layer** (`src/domain/`): Core business entities and rules
+- **Infrastructure** (`src/infrastructure/`): Database, APIs, and external integrations
+
+For detailed architecture documentation, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Prerequisites
 
