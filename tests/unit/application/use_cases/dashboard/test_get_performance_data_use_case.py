@@ -60,14 +60,12 @@ class TestGetPerformanceDataUseCase:
         assert result.mobile_metrics.device == "mobile"
         assert result.mobile_metrics.start_score == 85.5
         assert result.mobile_metrics.end_score == 87.2
-        assert result.mobile_metrics.delta == pytest.approx(1.7, rel=0.01)
-        assert result.mobile_metrics.traffic_light == "green"
+        # Note: delta and traffic_light calculations moved to PerformancePresenter
 
         assert result.desktop_metrics.device == "desktop"
         assert result.desktop_metrics.start_score == 90.1
         assert result.desktop_metrics.end_score == 91.8
-        assert result.desktop_metrics.delta == pytest.approx(1.7, rel=0.01)
-        assert result.desktop_metrics.traffic_light == "green"
+        # Note: delta and traffic_light calculations moved to PerformancePresenter
 
         # Verify repository was called correctly
         assert mock_repository.get_performance_metrics_by_date.call_count == 4
@@ -88,8 +86,7 @@ class TestGetPerformanceDataUseCase:
         # Assert
         assert result.mobile_metrics.start_score is None
         assert result.mobile_metrics.end_score is None
-        assert result.mobile_metrics.delta is None
-        assert result.mobile_metrics.traffic_light == "amber"
+        # Note: delta and traffic_light calculations moved to PerformancePresenter
 
     def test_execute_handles_negative_delta(
         self,
@@ -110,10 +107,11 @@ class TestGetPerformanceDataUseCase:
         result = use_case.execute(filter_criteria)
 
         # Assert
-        assert result.mobile_metrics.delta == pytest.approx(-5.0, rel=0.01)
-        assert result.mobile_metrics.traffic_light == "red"
-        assert result.desktop_metrics.delta == pytest.approx(0.0, rel=0.01)
-        assert result.desktop_metrics.traffic_light == "amber"
+        assert result.mobile_metrics.start_score == 90.0
+        assert result.mobile_metrics.end_score == 85.0  # Decline
+        assert result.desktop_metrics.start_score == 95.0
+        assert result.desktop_metrics.end_score == 95.0  # No change
+        # Note: delta and traffic_light calculations moved to PerformancePresenter
 
     def test_get_time_series_returns_data(
         self,
